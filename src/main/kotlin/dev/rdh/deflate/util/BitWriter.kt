@@ -42,7 +42,7 @@ class BitWriter(private val out: OutputStream) : AutoCloseable {
 
     /** Raw aligned byte/LE16 writes (use ONLY when byte-aligned). */
     fun writeAlignedByte(b: Int) {
-        require(pos == 0) { "Not byte-aligned" }
+        check(pos == 0) { "Not byte-aligned" }
         out.write(b and 0xFF)
     }
 

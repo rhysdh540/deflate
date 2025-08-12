@@ -1,18 +1,11 @@
 import dev.rdh.deflate.util.BitWriter
 import org.junit.Assert.assertArrayEquals
-import org.junit.Assert.assertThrows
-import org.junit.Assert.assertTrue
 import org.junit.jupiter.api.assertThrows
 import java.io.ByteArrayOutputStream
 import kotlin.test.Test
+import kotlin.test.assertEquals
 
 class TestBitWriter {
-
-    private fun write(block: (BitWriter) -> Unit): ByteArray {
-        val baos = ByteArrayOutputStream()
-        BitWriter(baos).use { bw -> block(bw) }
-        return baos.toByteArray()
-    }
 
     @Test
     fun writesSingleBits_LSBFirst() {
@@ -67,10 +60,10 @@ class TestBitWriter {
         val baos = ByteArrayOutputStream()
         val bw = BitWriter(baos)
         bw.writeBits(0b101, 3)
-        val ex = assertThrows(IllegalArgumentException::class.java) {
+        val ex = assertThrows<IllegalStateException> {
             bw.writeAlignedByte(0xAA)
         }
-        assertTrue(ex.message?.contains("Not byte-aligned") == true)
+        assertEquals(ex.message?.contains("Not byte-aligned"), true)
         bw.close()
     }
 

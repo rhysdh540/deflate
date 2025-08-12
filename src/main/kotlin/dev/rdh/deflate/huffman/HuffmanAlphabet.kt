@@ -12,6 +12,14 @@ class HuffmanAlphabet(
     val lengths: IntArray,
     val codes: IntArray,
 ) {
+    val numSymbols = lengths.size
+
+    init {
+        require(codes.size == lengths.size) {
+            "Codes array size must match lengths array size, got ${codes.size} and ${lengths.size}"
+        }
+    }
+
     fun writeSymbol(bw: BitWriter, sym: Int) {
         val len = lengths[sym]
         if (len == 0) error("symbol $sym has length 0")
@@ -21,8 +29,8 @@ class HuffmanAlphabet(
     companion object {
         private const val MAX_BITS = 15
 
-        fun fromLengths(lengthsIn: IntArray): HuffmanAlphabet {
-            val lengths = lengthsIn.copyOf()
+        fun fromLengths(lengths: IntArray): HuffmanAlphabet {
+            val lengths = lengths.copyOf()
 
             // count number of codes for each bit length
             val blCount = IntArray(MAX_BITS + 1)

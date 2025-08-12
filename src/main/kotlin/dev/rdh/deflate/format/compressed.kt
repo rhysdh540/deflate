@@ -18,23 +18,7 @@ fun writeFixedBlock(
     bw.alignToByte()
 }
 
-fun writeDynamicBlock(
-    tokens: List<Token>,
-    litLen: HuffmanAlphabet,
-    dist: HuffmanAlphabet,
-    bw: BitWriter,
-    final: Boolean = false
-) {
-    bw.writeBit(final)
-    bw.writeBits(0b10, 2)
-
-    TODO("Write dynamic block header with lengths and codes")
-
-    writeCompressedPayload(tokens, litLen, dist, bw)
-    bw.alignToByte()
-}
-
-private fun writeCompressedPayload(
+internal fun writeCompressedPayload(
     tokens: List<Token>,
     litlen: HuffmanAlphabet,
     dist: HuffmanAlphabet,
