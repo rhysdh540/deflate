@@ -5,7 +5,7 @@ import dev.rdh.deflate.format.writeDynamicBlock
 import org.junit.Assert.assertArrayEquals
 import kotlin.test.Test
 
-class TestDynamicBlock {
+class TestDynamicBlockRoundTrip {
     private fun deflate(tokens: List<Token>): ByteArray {
         return write {
             writeDynamicBlock(tokens, it, final = true)
@@ -37,6 +37,19 @@ class TestDynamicBlock {
             }
         }
         val deflated = deflate(tokens)
+        val inflated = inflate(deflated)
+        assertArrayEquals(src, inflated)
+    }
+
+    @Test
+    fun lotsOfLengthZeroes() {
+        val src = ByteArray(2048) { 'A'.code.toByte() }
+        val tokens: List<Token> = src.map { Literal(it) }
+
+        val deflated = deflate(tokens)
+
+        //println("deflated size: ${deflated.size} bytes")
+
         val inflated = inflate(deflated)
         assertArrayEquals(src, inflated)
     }
