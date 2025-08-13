@@ -19,9 +19,11 @@ class BitWriter(private val out: OutputStream) : AutoCloseable {
         if (pos == 8) flushByte()
     }
 
-    /** Write n bits from value, least-significant bit first. n must be 1..32. */
+    /**
+     * Write [n] bits from [value], least-significant bit first.
+     */
     fun writeBits(value: Int, n: Int) {
-        require(n in 1..32)
+        require(n in 1..Int.SIZE_BITS)
         var v = value
         var left = n
         while (left > 0) {
@@ -35,12 +37,16 @@ class BitWriter(private val out: OutputStream) : AutoCloseable {
         }
     }
 
-    /** Pad with zero bits to the next byte boundary. */
+    /**
+     * Pad with zero bits to the next byte boundary.
+     */
     fun alignToByte() {
         if (pos != 0) flushByte()
     }
 
-    /** Raw aligned byte/LE16 writes (use ONLY when byte-aligned). */
+    /**
+     * Raw aligned byte/LE16 writes (use ONLY when byte-aligned).
+     */
     fun writeAlignedByte(b: Int) {
         check(pos == 0) { "Not byte-aligned" }
         out.write(b and 0xFF)
