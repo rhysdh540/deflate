@@ -7,7 +7,7 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList
  * Basic match finder that finds every match in the input data
  * within a specified sliding window.
  */
-class DefaultMatchFinder(private val windowSize: Int) : MatchFinder {
+class DefaultMatchFinder(private val windowSize: Int = 32 * 1024) : MatchFinder {
     private lateinit var s: ByteArray
 
     override fun reset(input: ByteArray) {
