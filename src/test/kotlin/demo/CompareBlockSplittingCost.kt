@@ -11,8 +11,8 @@ import dev.rdh.deflate.format.writeDynamicBlock
 import dev.rdh.deflate.split.BlockSplitter
 import dev.rdh.deflate.split.GreedyBlockSplitter
 import inflate
+import resourceBytes
 import java.io.ByteArrayOutputStream
-import java.io.InputStream
 
 fun main() {
     val resourcePath = "Alice.txt"
@@ -68,11 +68,4 @@ private fun deflateWithSplits(tokens: List<Token>, blocks: List<BlockSplitter.Bl
         bw.alignToByte()
     }
     return baos.toByteArray()
-}
-
-private fun resourceBytes(path: String): ByteArray {
-    val ins: InputStream = Thread.currentThread().contextClassLoader
-        ?.getResourceAsStream(path.removePrefix("/"))
-        ?: error("Resource not found on classpath: $path")
-    return ins.use { it.readBytes() }
 }

@@ -23,10 +23,6 @@ internal fun writeCompressedPayload(
     dist: HuffmanAlphabet,
     bw: BitSink
 ) {
-    if (tokens.size > 0xFFFF) {
-        error("Too many tokens for a single block: ${tokens.size}")
-    }
-
     for (t in tokens) {
         when (t) {
             is Literal -> {

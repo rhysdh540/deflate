@@ -1,6 +1,8 @@
 import dev.rdh.deflate.util.BitWriter
 import java.io.ByteArrayOutputStream
+import java.io.InputStream
 import java.util.zip.Inflater
+import kotlin.io.use
 import kotlin.use
 
 fun write(block: (BitWriter) -> Unit): ByteArray {
@@ -25,4 +27,11 @@ fun inflate(data: ByteArray): ByteArray {
     }
     inf.end()
     return out.toByteArray()
+}
+
+fun resourceBytes(path: String): ByteArray {
+    val ins: InputStream = Thread.currentThread().contextClassLoader
+        ?.getResourceAsStream(path.removePrefix("/"))
+        ?: error("Resource not found on classpath: $path")
+    return ins.use { it.readBytes() }
 }
