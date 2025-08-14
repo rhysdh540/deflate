@@ -6,13 +6,11 @@ import dev.rdh.deflate.core.Token
 import dev.rdh.deflate.lz.MatchFinder
 import it.unimi.dsi.fastutil.objects.ObjectArrayList
 
-data class ParseResult(val tokens: List<Token>, val totalBitsNoHeader: Int)
-
 object OptimalParser {
     fun run(
         input: ByteArray,
         mf: MatchFinder,
-        costs: CostModel
+        costs: ParsingCostModel
     ): ParseResult {
         val n = input.size
         val dp = IntArray(n + 1) { Int.MAX_VALUE / 4 }
@@ -28,8 +26,7 @@ object OptimalParser {
             var bestDist = 0
 
             // matches
-            val cand = mf.matchesAt(i)
-            for (m in cand) {
+            for (m in mf.matchesAt(i)) {
                 val j = i + m.len
                 if (j <= n) {
                     val c = costs.costMatch(m.len, m.dist) + dp[j]
@@ -76,4 +73,6 @@ object OptimalParser {
         if (len != curLen) return len > curLen
         return dist < curDist
     }
+
+    data class ParseResult(val tokens: List<Token>, val totalBitsNoHeader: Int)
 }

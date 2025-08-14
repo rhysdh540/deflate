@@ -6,17 +6,19 @@ import dev.rdh.deflate.core.Tables
 import dev.rdh.deflate.core.Token
 import dev.rdh.deflate.huffman.HuffmanAlphabet
 import dev.rdh.deflate.huffman.HuffmanTree
-import dev.rdh.deflate.util.BitWriter
+import dev.rdh.deflate.util.BitSink
 import it.unimi.dsi.fastutil.ints.IntArrayList
 
-fun writeDynamicBlock(
-    tokens: List<Token>,
-    bw: BitWriter,
-    final: Boolean = false
-) {
+fun writeDynamicBlock(tokens: List<Token>, bw: BitSink, final: Boolean = false) {
     bw.writeBit(final)
     bw.writeBits(0b10, 2)
 
+    val (litlens, dists) = writeDynamicHeader(tokens, bw)
+
+    writeCompressedPayload(tokens, litlens, dists, bw)
+}
+
+fun writeDynamicHeader(tokens: List<Token>, bw: BitSink): Pair<HuffmanAlphabet, HuffmanAlphabet> {
     val (litFreq, distFreq) = buildHistograms(tokens)
     val litlens = HuffmanTree(litFreq, limit = 15).toAlphabet()
     val dists = if (distFreq.any { it > 0 }) {
@@ -50,15 +52,14 @@ fun writeDynamicBlock(
         i++
     }
 
-    writeCompressedPayload(tokens, litlens, dists, bw)
-    bw.alignToByte()
+    return litlens to dists
 }
 
 // if there's no distance tokens, the spec still requires at least one distance code
 // so this is a minimal alphabet with a single code of length 1
 val NO_DISTANCES_ALPHABET = HuffmanAlphabet.fromLengths(IntArray(30).also { it[0] = 1 })
 
-private fun buildHistograms(tokens: List<Token>): Pair<IntArray, IntArray> {
+fun buildHistograms(tokens: List<Token>): Pair<IntArray, IntArray> {
     val lit = IntArray(286)
     val dist = IntArray(30)
     for (t in tokens) {
@@ -76,7 +77,7 @@ private fun buildHistograms(tokens: List<Token>): Pair<IntArray, IntArray> {
     return lit to dist
 }
 
-private fun computeCounts(litlenLengths: IntArray, distLengths: IntArray): Pair<Int, Int> {
+fun computeCounts(litlenLengths: IntArray, distLengths: IntArray): Pair<Int, Int> {
     fun IntArray.lastNonZero(maxIdx: Int): Int {
         var last = -1
         for (i in 0..maxIdx) {
@@ -95,7 +96,7 @@ private fun computeCounts(litlenLengths: IntArray, distLengths: IntArray): Pair<
     return litCount to distCount
 }
 
-private fun computeHCLEN(codeLengths: HuffmanAlphabet): Int {
+fun computeHCLEN(codeLengths: HuffmanAlphabet): Int {
     var last = -1
     for (i in 0 until 19) {
         val sym = Tables.CODELENGTH_ORDER[i]
@@ -113,7 +114,7 @@ private fun computeHCLEN(codeLengths: HuffmanAlphabet): Int {
  * @param nbits extra-bit counts for 16/17/18 symbols (0,2,3,7)
  * @param freq frequency of CL symbols 0..18
  */
-private class CLRLE(
+class CLRLE(
     val syms: IntArrayList,
     val extras: IntArrayList,
     val nbits: IntArrayList,
@@ -125,7 +126,7 @@ private class CLRLE(
  * @param seq the raw lengths, 0..15
  * @return the sequence that represents the input, with 16/17/18 codes for runs of the same number
  */
-private fun rleCodeLengths(seq: IntArray): CLRLE {
+fun rleCodeLengths(seq: IntArray): CLRLE {
     val syms = IntArrayList()
     val extras = IntArrayList()
     val nbits = IntArrayList()

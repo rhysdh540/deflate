@@ -5,24 +5,23 @@ import dev.rdh.deflate.core.Match
 import dev.rdh.deflate.core.Tables
 import dev.rdh.deflate.core.Token
 import dev.rdh.deflate.huffman.HuffmanAlphabet
-import dev.rdh.deflate.util.BitWriter
+import dev.rdh.deflate.util.BitSink
 
 fun writeFixedBlock(
     tokens: List<Token>,
-    bw: BitWriter,
+    bw: BitSink,
     final: Boolean = false
 ) {
     bw.writeBit(final)
     bw.writeBits(0b01, 2)
     writeCompressedPayload(tokens, HuffmanAlphabet.FIXED_LITLEN, HuffmanAlphabet.FIXED_DIST, bw)
-    bw.alignToByte()
 }
 
 internal fun writeCompressedPayload(
     tokens: List<Token>,
     litlen: HuffmanAlphabet,
     dist: HuffmanAlphabet,
-    bw: BitWriter
+    bw: BitSink
 ) {
     if (tokens.size > 0xFFFF) {
         error("Too many tokens for a single block: ${tokens.size}")
@@ -44,7 +43,7 @@ internal fun writeCompressedPayload(
 }
 
 private data class Sym(val symbol: Int, val extraVal: Int, val extraBits: Int) {
-    fun write(bw: BitWriter, alphabet: HuffmanAlphabet) {
+    fun write(bw: BitSink, alphabet: HuffmanAlphabet) {
         alphabet.writeSymbol(bw, symbol)
         if (extraBits != 0) {
             bw.writeBits(extraVal, extraBits)

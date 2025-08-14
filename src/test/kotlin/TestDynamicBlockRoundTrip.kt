@@ -12,6 +12,7 @@ class TestDynamicBlockRoundTrip {
     private fun deflate(tokens: List<Token>): ByteArray {
         return write {
             writeDynamicBlock(tokens, it, final = true)
+            it.alignToByte()
         }
     }
 

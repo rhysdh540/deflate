@@ -1,6 +1,6 @@
 package dev.rdh.deflate.huffman
 
-import dev.rdh.deflate.util.BitWriter
+import dev.rdh.deflate.util.BitSink
 
 /**
  * Represents a Huffman alphabet with lengths and codes for symbols.
@@ -20,7 +20,7 @@ class HuffmanAlphabet(
         }
     }
 
-    fun writeSymbol(bw: BitWriter, sym: Int) {
+    fun writeSymbol(bw: BitSink, sym: Int) {
         val len = lengths[sym]
         if (len == 0) error("symbol $sym has length 0")
         bw.writeBits(codes[sym], len)

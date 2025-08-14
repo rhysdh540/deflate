@@ -3,12 +3,7 @@ package dev.rdh.deflate.dp
 import dev.rdh.deflate.core.Tables
 import dev.rdh.deflate.huffman.HuffmanAlphabet
 
-class CodeLengths(
-    val litlenBits: IntArray,
-    val distBits: IntArray,
-)
-
-class CostModel(private val codes: CodeLengths) {
+class ParsingCostModel(private val codes: CodeLengths) {
 
     fun costLiteral(b: Int): Int = codes.litlenBits[b and 0xFF]
 
@@ -25,6 +20,11 @@ class CostModel(private val codes: CodeLengths) {
     fun costEOB(): Int = codes.litlenBits[256]
 
     companion object {
-        val FIXED = CostModel(CodeLengths(HuffmanAlphabet.FIXED_LITLEN.lengths, HuffmanAlphabet.FIXED_DIST.lengths))
+        val FIXED = ParsingCostModel(CodeLengths(HuffmanAlphabet.FIXED_LITLEN.lengths, HuffmanAlphabet.FIXED_DIST.lengths))
     }
+
+    class CodeLengths(
+        val litlenBits: IntArray,
+        val distBits: IntArray,
+    )
 }

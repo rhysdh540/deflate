@@ -1,6 +1,6 @@
 import dev.rdh.deflate.core.Literal
 import dev.rdh.deflate.core.Match
-import dev.rdh.deflate.dp.CostModel
+import dev.rdh.deflate.dp.ParsingCostModel
 import dev.rdh.deflate.dp.OptimalParser
 import dev.rdh.deflate.lz.DefaultMatchFinder
 import kotlin.test.Test
@@ -13,7 +13,7 @@ class TestOptimalParser {
         // "aaaaab"  -> expect: L('a'), M(len=4, dist=1), L('b') under fixed Huffman costs
         val s = "aaaaab".encodeToByteArray()
         val mf = DefaultMatchFinder(32 * 1024).also { it.reset(s) }
-        val costs = CostModel.FIXED
+        val costs = ParsingCostModel.FIXED
 
         val result = OptimalParser.run(s, mf, costs)
         val tokens = result.tokens
@@ -34,7 +34,7 @@ class TestOptimalParser {
         // no repeats → dp should choose all literals
         val s = byteArrayOf(1, 2, 3, 4, 5, 6, 7, 8)
         val mf = DefaultMatchFinder(32 * 1024).also { it.reset(s) }
-        val costs = CostModel.FIXED
+        val costs = ParsingCostModel.FIXED
 
         val result = OptimalParser.run(s, mf, costs)
         val tokens = result.tokens

@@ -1,7 +1,7 @@
 import dev.rdh.deflate.core.Literal
 import dev.rdh.deflate.core.Match
 import dev.rdh.deflate.core.Token
-import dev.rdh.deflate.dp.CostModel
+import dev.rdh.deflate.dp.ParsingCostModel
 import dev.rdh.deflate.dp.OptimalParser
 import dev.rdh.deflate.lz.DefaultMatchFinder
 import dev.rdh.deflate.lz.MatchFinder
@@ -26,7 +26,7 @@ class TestOptimalParserBruteForce {
 
         for (s in cases) {
             val mf = DefaultMatchFinder(32 * 1024).also { it.reset(s) }
-            val costs = CostModel.FIXED
+            val costs = ParsingCostModel.FIXED
 
             val (bfBits, bfTokens) = bruteForceMinBits(s, mf, costs)
             val dp = OptimalParser.run(s, mf, costs)
@@ -51,7 +51,7 @@ class TestOptimalParserBruteForce {
             val s = ByteArray(n) { (rnd.nextInt(5) + 'a'.code).toByte() } // small alphabet to allow matches
 
             val mf = DefaultMatchFinder(32 * 1024).also { it.reset(s) }
-            val costs = CostModel.FIXED
+            val costs = ParsingCostModel.FIXED
 
             val (bfBits, _) = bruteForceMinBits(s, mf, costs)
             val dp = OptimalParser.run(s, mf, costs)
@@ -74,7 +74,7 @@ class TestOptimalParserBruteForce {
         return i == n
     }
 
-    private fun scoreTokens(tokens: List<Token>, costs: CostModel): Int {
+    private fun scoreTokens(tokens: List<Token>, costs: ParsingCostModel): Int {
         var bits = 0
         for (t in tokens) {
             bits += when (t) {
@@ -92,7 +92,7 @@ class TestOptimalParserBruteForce {
     private fun bruteForceMinBits(
         input: ByteArray,
         mf: MatchFinder,
-        costs: CostModel
+        costs: ParsingCostModel
     ): Pair<Int, List<Token>> {
         val n = input.size
         var bestBits = Int.MAX_VALUE / 4

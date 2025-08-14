@@ -1,6 +1,6 @@
 import dev.rdh.deflate.core.Literal
 import dev.rdh.deflate.core.Token
-import dev.rdh.deflate.dp.CostModel
+import dev.rdh.deflate.dp.ParsingCostModel
 import dev.rdh.deflate.dp.OptimalParser
 import dev.rdh.deflate.format.writeFixedBlock
 import dev.rdh.deflate.lz.DefaultMatchFinder
@@ -12,6 +12,7 @@ class TestFixedBlockRoundTrip {
     private fun deflate(tokens: List<Token>): ByteArray {
         return write {
             writeFixedBlock(tokens, it, final = true)
+            it.alignToByte()
         }
     }
 
@@ -20,7 +21,7 @@ class TestFixedBlockRoundTrip {
         val src = "banana_band_banana_band".encodeToByteArray()
 
         val mf = DefaultMatchFinder(32 * 1024).also { it.reset(src) }
-        val dp = OptimalParser.run(src, mf, CostModel.FIXED)
+        val dp = OptimalParser.run(src, mf, ParsingCostModel.FIXED)
 
         val deflated = deflate(dp.tokens)
         val inflated = inflate(deflated)
