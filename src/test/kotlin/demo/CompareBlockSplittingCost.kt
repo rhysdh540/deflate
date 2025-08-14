@@ -6,7 +6,7 @@ import dev.rdh.deflate.core.Token
 import dev.rdh.deflate.dp.ParsingCostModel
 import dev.rdh.deflate.dp.OptimalParser
 import dev.rdh.deflate.util.BitWriter
-import dev.rdh.deflate.lz.DefaultMatchFinder
+import dev.rdh.deflate.lz.HashChainMatchFinder
 import dev.rdh.deflate.format.writeDynamicBlock
 import dev.rdh.deflate.split.BlockSplitter
 import dev.rdh.deflate.split.GreedyBlockSplitter
@@ -19,7 +19,7 @@ fun main() {
     val data = resourceBytes(resourcePath)
     println("Input: ${data.size} bytes (${resourcePath})")
 
-    val mf = DefaultMatchFinder().also { it.reset(data) }
+    val mf = HashChainMatchFinder().also { it.reset(data) }
     val dp = OptimalParser.run(data, mf, ParsingCostModel.FIXED)
     val tokens = dp.tokens
     println("Tokens: literals/matches = ${tokens.count { it is Literal }}/${tokens.count { it is Match }}")
