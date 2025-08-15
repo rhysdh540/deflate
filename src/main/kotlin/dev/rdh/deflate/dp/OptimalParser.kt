@@ -52,7 +52,7 @@ object OptimalParser {
         var i = 0
         while (i < n) {
             if (choice[i] == -1) {
-                out.add(Literal(input[i].toInt() and 0xFF))
+                out.add(Literal(input[i]))
                 i += 1
             } else {
                 out.add(Match(choice[i], dist[i]))

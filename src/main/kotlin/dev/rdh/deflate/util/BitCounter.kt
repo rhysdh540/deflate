@@ -20,7 +20,7 @@ class BitCounter : BitSink {
         bitsWritten += n
         pos += n
         if (pos >= 8) {
-            pos %= 8
+            pos = pos and 7
         }
     }
 

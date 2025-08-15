@@ -1,14 +1,15 @@
 package dev.rdh.deflate.core
 
-sealed class Token
+sealed interface Token
 
-data class Literal(val value: Byte) : Token() {
-    constructor(value: Int) : this(value.toByte())
+@JvmInline
+value class Literal(val value: Byte) : Token {
     override fun toString(): String = "Literal($value)"
 
-    val intValue: Int = value.toInt() and 0xFF
+    val intValue: Int get() = value.toInt() and 0xFF
 }
 
-data class Match(val len: Int, val dist: Int) : Token() {
+@JvmRecord
+data class Match(val len: Int, val dist: Int) : Token {
     override fun toString(): String = "Match(len=$len, dist=$dist)"
 }
