@@ -1,7 +1,5 @@
 package dev.rdh.deflate.core
 
-import it.unimi.dsi.fastutil.ints.IntArrayList
-
 object Tables {
     // length codes 257..285 (index 0..28)
     val LEN_BASE = intArrayOf(
@@ -47,35 +45,38 @@ object Tables {
         0, 8, 7, 9, 6, 10, 5, 11, 4, 12, 3, 13, 2, 14, 1, 15
     )
 
-    val lengthBoundaries: IntArray by lazy {
-        // boundaries where length code/extra changes (helpful for pruning)
-        val b = IntArrayList()
-        for (i in 0 until LEN_BASE.size) {
-            val base = LEN_BASE[i]
-            val span = 1 shl LEN_EXTRA[i]
-            for (k in 0 until span) b.add(base + k)
+    val LEN_TO_INDEX: IntArray = IntArray(259) { -1 }
+    val DIST_TO_INDEX: IntArray = IntArray(32768 + 1) { -1 }
+
+    init {
+        for (idx in 0..28) {
+            val base = LEN_BASE[idx]
+            val ext  = LEN_EXTRA[idx]
+            val max  = base + ((1 shl ext) - 1)
+            for (l in base..max) {
+                // let higher indices overwrite (so 258 ends up with idx=28)
+                if (l in 3..258) LEN_TO_INDEX[l] = idx
+            }
         }
-        b.distinct().sorted().toIntArray()
+
+        for (idx in 0..29) {
+            val base = DIST_BASE[idx]
+            val ext  = DIST_EXTRA[idx]
+            val max  = base + ((1 shl ext) - 1)
+            val upper = minOf(max, DIST_TO_INDEX.lastIndex)
+            for (d in base..upper) {
+                DIST_TO_INDEX[d] = idx
+            }
+        }
     }
 
     fun lenCodeIndex(len: Int): Int {
-        if (len == 258) return 28
-        for (i in 0 until 28) {
-            val base = LEN_BASE[i]
-            val span = 1 shl LEN_EXTRA[i]
-            val hi = base + span - 1
-            if (len in base..hi) return i
-        }
-        return 28
+        require(len in 3..258) { "Length must be in range 3..258, got $len" }
+        return LEN_TO_INDEX[len]
     }
 
     fun distCodeIndex(dist: Int): Int {
-        for (i in 0 until DIST_BASE.size) {
-            val base = DIST_BASE[i]
-            val span = 1 shl DIST_EXTRA[i]
-            val hi = base + span - 1
-            if (dist in base..hi) return i
-        }
-        return DIST_BASE.lastIndex
+        require(dist in 1..32768) { "Distance must be in range 1..32768, got $dist" }
+        return DIST_TO_INDEX[dist]
     }
 }
