@@ -25,7 +25,7 @@ class HashChainMatchFinder(
     private val maxPerPos: Int = 24,
     private val niceLen: Int = 64,
     private val sameLenProbe: Int = 32
-) : MatchFinder {
+) : CachingMatchFinder() {
 
     private lateinit var s: ByteArray
     private lateinit var prev: IntArray   // prev[i] = previous pos with same hash, or -1
@@ -43,6 +43,7 @@ class HashChainMatchFinder(
     }
 
     override fun reset(input: ByteArray) {
+        super.reset(input)
         s = input
         if (s.size < 3) {
             prev = IntArray(s.size) { -1 }
@@ -62,7 +63,7 @@ class HashChainMatchFinder(
         }
     }
 
-    override fun matchesAt(index: Int): List<Match> {
+    override fun findAt(index: Int): List<Match> {
         if (index < 0 || index + 2 >= s.size) return emptyList()
 
         val maxLenAtI = min(258, s.size - index)

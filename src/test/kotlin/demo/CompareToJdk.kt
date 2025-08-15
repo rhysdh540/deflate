@@ -1,7 +1,6 @@
 package demo
 
-import dev.rdh.deflate.dp.OptimalParser
-import dev.rdh.deflate.dp.ParsingCostModel
+import dev.rdh.deflate.dp.MultiPassOptimalParser
 import dev.rdh.deflate.format.writeDynamicBlock
 import dev.rdh.deflate.lz.HashChainMatchFinder
 import dev.rdh.deflate.split.BlockSplitter
@@ -22,9 +21,9 @@ fun main() {
     val jdk = measureTimedValue { jdkDeflate(data) }
     println("java.util.zip size: ${jdk.value.size} bytes (${jdk.duration})")
 
-    val rdh = measureTimedValue {
+    val (result, duration) = measureTimedValue {
         val mf = HashChainMatchFinder().also { it.reset(data) }
-        val dp = OptimalParser.run(data, mf, ParsingCostModel.FIXED)
+        val dp = MultiPassOptimalParser.run(data, mf)
 
         val splitter: BlockSplitter = GreedyBlockSplitter(
             minTokensPerBlock = 300,
@@ -43,13 +42,15 @@ fun main() {
             }
             w.alignToByte()
 
-            it.toByteArray() to blocks.size
+            Triple(it.toByteArray(), blocks.size, dp)
         }
     }
 
-    inflate(rdh.value.first)
+    val (deflated, numBlocks, dp) = result
 
-    println("Custom deflate size: ${rdh.value.first.size} bytes in ${rdh.value.second} block(s) (${rdh.duration})")
+    inflate(deflated)
+
+    println("Custom deflate size: ${deflated.size} bytes in $numBlocks blocks, ${dp.passes} passes (${duration})")
 }
 
 fun jdkDeflate(data: ByteArray, level: Int = Deflater.BEST_COMPRESSION): ByteArray {
