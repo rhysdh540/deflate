@@ -1,6 +1,7 @@
 package dev.rdh.deflate.lz
 
 import dev.rdh.deflate.core.Match
+import dev.rdh.deflate.util.MatchList
 
 /**
  * Finds matches in a byte array. wow!
@@ -23,7 +24,7 @@ interface MatchFinder : AutoCloseable {
      * @param index The index in the input byte array to search for matches.
      * @return A list of [Match] objects found at the specified index.
      */
-    fun matchesAt(index: Int): List<Match>
+    fun matchesAt(index: Int): MatchList
 
     override fun close() {}
 }

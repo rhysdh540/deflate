@@ -9,8 +9,8 @@ import dev.rdh.deflate.util.BitCounter
 
 data class MultiPassResult(
     val tokens: List<Token>,
-    val costs: ParsingCostModel,        // final code lengths used by the last pass
-    val totalBits: Long,                 // 3 (BFINAL+BTYPE) + header + payload
+    val costs: ParsingCostModel, // final code lengths used by the last pass
+    val totalBits: Long, // 3 (BFINAL+BTYPE) + header + payload
     val headerBits: Long,
     val payloadBits: Int,
     val passes: Int
@@ -71,7 +71,6 @@ object MultiPassOptimalParser {
         return requireNotNull(bestRes)
     }
 
-    // Reuse your exact token cost math so evaluation matches what you’d emit.
     private fun payloadBits(tokens: List<Token>, costs: ParsingCostModel): Int {
         var bits = 0
         for (t in tokens) {

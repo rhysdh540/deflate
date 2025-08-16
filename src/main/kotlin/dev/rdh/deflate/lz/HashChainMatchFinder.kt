@@ -2,8 +2,8 @@ package dev.rdh.deflate.lz
 
 import dev.rdh.deflate.core.Match
 import dev.rdh.deflate.core.Tables
+import dev.rdh.deflate.util.MatchList
 
-import it.unimi.dsi.fastutil.objects.ObjectArrayList
 import kotlin.math.min
 
 /**
@@ -63,11 +63,11 @@ class HashChainMatchFinder(
         }
     }
 
-    override fun findAt(index: Int): List<Match> {
-        if (index < 0 || index + 2 >= s.size) return emptyList()
+    override fun findAt(index: Int): MatchList {
+        if (index < 0 || index + 2 >= s.size) return MatchList()
 
         val maxLenAtI = min(258, s.size - index)
-        val out = ObjectArrayList<Match>(min(12, maxPerPos))
+        val out = MatchList()
 
         val buckets = 29 * 32 // 29 len codes (0..28) x 30 dist codes (0..29); use 32 stride
         val posByBucket = IntArray(buckets) { -1 }
