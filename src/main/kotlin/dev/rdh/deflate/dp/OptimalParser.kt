@@ -10,23 +10,26 @@ object OptimalParser {
     fun run(
         input: ByteArray,
         mf: MatchFinder,
-        costs: ParsingCostModel
+        costs: ParsingCostModel,
+        start: Int = 0,
+        end: Int = input.size
     ): ParseResult {
-        val n = input.size
+        val n = end - start
         val dp = IntArray(n + 1) { Int.MAX_VALUE / 4 }
         val choice = IntArray(n + 1) { -1 }  // -1 -> literal; otherwise match length
         val dist = IntArray(n + 1) { 0 }
 
         dp[n] = costs.costEOB()
 
-        for (i in n - 1 downTo 0) {
+        for (gi in end - 1 downTo start) {
+            val i = gi - start
             // literal
             var best = costs.costLiteral(input[i].toInt()) + dp[i + 1]
             var bestLen = -1
             var bestDist = 0
 
             // matches
-            for (m in mf.matchesAt(i)) {
+            for (m in mf.matchesAt(gi)) {
                 val j = i + m.len
                 if (j <= n) {
                     val c = costs.costMatch(m.len, m.dist) + dp[j]

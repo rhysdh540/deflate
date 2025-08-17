@@ -22,7 +22,9 @@ object MultiPassOptimalParser {
         input: ByteArray,
         mf: MatchFinder,
         maxPasses: Int = 3,
-        epsilon: Double = 5e-4
+        epsilon: Double = 5e-4,
+        start: Int = 0,
+        end: Int = input.size
     ): MultiPassResult {
         var costs = ParsingCostModel.FIXED
         mf.reset(input)
@@ -37,7 +39,7 @@ object MultiPassOptimalParser {
 
         var pass = 0
         while (pass < maxPasses) {
-            val parsed = OptimalParser.run(input, mf, costs)
+            val parsed = OptimalParser.run(input, mf, costs, start, end)
             val tokens = parsed.tokens
 
             val counter = BitCounter()
@@ -68,7 +70,7 @@ object MultiPassOptimalParser {
             pass++
         }
 
-        return requireNotNull(bestRes)
+        return bestRes!!
     }
 
     private fun payloadBits(tokens: List<Token>, costs: ParsingCostModel): Int {
