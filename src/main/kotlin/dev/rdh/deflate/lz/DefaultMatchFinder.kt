@@ -31,6 +31,6 @@ class DefaultMatchFinder(private val windowSize: Int = 32 * 1024) : MatchFinder 
                 matches.add(Match(len, index - i))
             }
         }
-        return matches
+        return buildSublenCandidates(matches)
     }
 }

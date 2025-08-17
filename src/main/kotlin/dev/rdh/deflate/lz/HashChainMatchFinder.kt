@@ -31,12 +31,10 @@ class HashChainMatchFinder(
     private lateinit var prev: IntArray   // prev[i] = previous pos with same hash, or -1
     private val hashSize = 1 shl hashBits
 
-    // --- hashing (3-byte) ---
     private fun hash3(i: Int): Int {
         val a = s[i].toInt() and 0xFF
         val b = s[i + 1].toInt() and 0xFF
         val c = s[i + 2].toInt() and 0xFF
-        // simple mixed 3-byte hash
         var h = (a * 0x1e35a7bd + b * 0x9e3779b1 + c * 0x85ebca6b).toInt()
         h = h xor (h ushr 13)
         return h and (hashSize - 1)
@@ -171,6 +169,6 @@ class HashChainMatchFinder(
             p = prev[p]
         }
 
-        return out
+        return buildSublenCandidates(out)
     }
 }
