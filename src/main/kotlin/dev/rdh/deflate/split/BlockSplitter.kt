@@ -3,8 +3,6 @@ package dev.rdh.deflate.split
 import dev.rdh.deflate.core.Token
 
 interface BlockSplitter {
-    data class Block(val start: Int, val end: Int)
-
     /**
      * Splits the input tokens into blocks.
      * @param tokens The input list of tokens to be split into blocks.

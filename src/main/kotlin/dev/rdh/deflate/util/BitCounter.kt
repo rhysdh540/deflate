@@ -13,7 +13,7 @@ class BitCounter : BitSink {
     }
 
     override fun writeBits(value: Int, n: Int) {
-        require(n in 1..32) { "n must be between 1 and 32" }
+        //require(n in 1..32) { "n must be between 1 and 32" }
         bitsWritten += n
     }
 

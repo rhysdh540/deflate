@@ -1,8 +1,11 @@
 package demo
 
 import dev.rdh.deflate.dp.MultiPassOptimalParser
+import dev.rdh.deflate.dp.OptimalParser
+import dev.rdh.deflate.dp.ParsingCostModel
 import dev.rdh.deflate.format.writeDynamicBlock
 import dev.rdh.deflate.lz.HashChainMatchFinder
+import dev.rdh.deflate.split.Block
 import dev.rdh.deflate.split.GreedyBlockSplitter
 import dev.rdh.deflate.util.BitWriter
 import inflate
@@ -11,11 +14,12 @@ import java.io.ByteArrayOutputStream
 import java.util.zip.Deflater
 import kotlin.io.path.Path
 import kotlin.io.path.writeBytes
+import kotlin.io.println
 import kotlin.time.measureTimedValue
 import kotlin.use
 
 fun main() {
-    val resourcePath = "bible.txt"
+    val resourcePath = "scrabble.txt"
     val data = resourceBytes(resourcePath)
     println("Input: ${data.size} bytes (${resourcePath})")
 
@@ -23,24 +27,22 @@ fun main() {
     println("java.util.zip size: ${jdk.value.size} bytes (${jdk.duration})")
 
     val (deflated, duration) = measureTimedValue {
-        val mf = HashChainMatchFinder()
-        val (dp, duration0) = measureTimedValue {
-            MultiPassOptimalParser.run(data, mf, maxPasses = 100)
-        }
-
-        println("main optimal parser: ${dp.tokens.size} tokens, ${dp.passes} passes (${duration0})")
+        val mf = HashChainMatchFinder().also { it.reset(data) }
+        val dp = OptimalParser.run(data, mf, ParsingCostModel.FIXED)
 
         val blocks = GreedyBlockSplitter().split(dp.tokens)
 
-        println("split ${blocks.size} blocks")
-
+        val blockDPs = Block.toByteRanges(blocks, Block.bytesPrefix(dp.tokens)).map {
+            MultiPassOptimalParser.run(data, mf,
+                start = it.first, end = it.last + 1, maxPasses = 100
+            )
+        }
 
         ByteArrayOutputStream().use {
             val w = BitWriter(it)
-            for ((i, b) in blocks.withIndex()) {
-                val last = (i == blocks.lastIndex)
-                val slice = dp.tokens.subList(b.start, b.end)
-                writeDynamicBlock(slice, w, final = last)
+            for ((i, dp) in blockDPs.withIndex()) {
+                val last = (i == blockDPs.lastIndex)
+                writeDynamicBlock(dp.tokens, w, final = last)
             }
             w.alignToByte()
 

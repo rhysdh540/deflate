@@ -24,7 +24,7 @@ object OptimalParser {
         for (gi in end - 1 downTo start) {
             val i = gi - start
             // literal
-            var best = costs.costLiteral(input[i].toInt()) + dp[i + 1]
+            var best = costs.costLiteral(input[gi].toInt()) + dp[i + 1]
             var bestLen = -1
             var bestDist = 0
 
@@ -55,8 +55,8 @@ object OptimalParser {
         var i = 0
         while (i < n) {
             if (choice[i] == -1) {
-                out.add(Literal(input[i]))
-                i += 1
+                out.add(Literal(input[start + i]))
+                i++
             } else {
                 out.add(Match(choice[i], dist[i]))
                 i += choice[i]

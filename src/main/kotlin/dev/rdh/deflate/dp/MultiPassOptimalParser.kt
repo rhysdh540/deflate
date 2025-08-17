@@ -1,7 +1,5 @@
 package dev.rdh.deflate.dp
 
-import dev.rdh.deflate.core.Literal
-import dev.rdh.deflate.core.Match
 import dev.rdh.deflate.core.Token
 import dev.rdh.deflate.format.writeDynamicHeader
 import dev.rdh.deflate.lz.MatchFinder
@@ -27,7 +25,6 @@ object MultiPassOptimalParser {
         end: Int = input.size
     ): MultiPassResult {
         var costs = ParsingCostModel.FIXED
-        mf.reset(input)
 
         var bestTotal = Long.MAX_VALUE
         var bestRes: MultiPassResult? = null
@@ -49,11 +46,13 @@ object MultiPassOptimalParser {
             val passCosts = ParsingCostModel(
                 ParsingCostModel.CodeLengths(litAlpha.lengths, distAlpha.lengths)
             )
-            val total = 3 + headerBits + payloadBits(tokens, passCosts)
+
+            val payloadBits = passCosts.costPayload(tokens)
+            val total = 3 + headerBits + payloadBits
 
             if (total < bestTotal) {
                 bestTotal = total
-                bestRes = MultiPassResult(tokens, passCosts, total, headerBits, payloadBits(tokens, passCosts), pass + 1)
+                bestRes = MultiPassResult(tokens, passCosts, total, headerBits, payloadBits, pass + 1)
             }
 
             // stopping conditions
@@ -73,15 +72,4 @@ object MultiPassOptimalParser {
         return bestRes!!
     }
 
-    private fun payloadBits(tokens: List<Token>, costs: ParsingCostModel): Int {
-        var bits = 0
-        for (t in tokens) {
-            bits += when (t) {
-                is Literal -> costs.costLiteral(t.intValue)
-                is Match -> costs.costMatch(t.len, t.dist)
-            }
-        }
-        bits += costs.costEOB()
-        return bits
-    }
 }

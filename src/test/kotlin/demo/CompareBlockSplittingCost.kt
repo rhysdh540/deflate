@@ -8,6 +8,7 @@ import dev.rdh.deflate.dp.OptimalParser
 import dev.rdh.deflate.util.BitWriter
 import dev.rdh.deflate.lz.HashChainMatchFinder
 import dev.rdh.deflate.format.writeDynamicBlock
+import dev.rdh.deflate.split.Block
 import dev.rdh.deflate.split.BlockSplitter
 import dev.rdh.deflate.split.GreedyBlockSplitter
 import inflate
@@ -57,7 +58,7 @@ private fun deflateSingleBlock(tokens: List<Token>): ByteArray {
     return baos.toByteArray()
 }
 
-private fun deflateWithSplits(tokens: List<Token>, blocks: List<BlockSplitter.Block>): ByteArray {
+private fun deflateWithSplits(tokens: List<Token>, blocks: List<Block>): ByteArray {
     val baos = ByteArrayOutputStream()
     BitWriter(baos).use { bw ->
         for ((i, b) in blocks.withIndex()) {

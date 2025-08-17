@@ -24,11 +24,11 @@ class GreedyBlockSplitter(
     private val gainThresholdBits: Int = 128
 ) : BlockSplitter {
 
-    override fun split(tokens: List<Token>): List<BlockSplitter.Block> {
-        val out = mutableListOf<BlockSplitter.Block>()
+    override fun split(tokens: List<Token>): List<Block> {
+        val out = mutableListOf<Block>()
         fun recurse(lo: Int, hi: Int) {
             val n = hi - lo
-            if (n <= minTokensPerBlock) { out += BlockSplitter.Block(lo, hi); return }
+            if (n <= minTokensPerBlock) { out += Block(lo, hi); return }
 
             val full = blockCost(tokens, lo, hi)
             var bestPos = -1
@@ -59,7 +59,7 @@ class GreedyBlockSplitter(
                 recurse(lo, bestPos)
                 recurse(bestPos, hi)
             } else {
-                out += BlockSplitter.Block(lo, hi)
+                out += Block(lo, hi)
             }
         }
         recurse(0, tokens.size)
