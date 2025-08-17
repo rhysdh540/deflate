@@ -34,15 +34,22 @@ fun buildSublenCandidates(raw: MatchList): MatchList {
     if (raw.isEmpty()) return raw
     val out = MatchList()
 
-    val bestDistCodes = IntArray(29) { Int.MAX_VALUE } // per length code
-    val bestDists = IntArray(29) { Int.MAX_VALUE } // tiebreaker
-    val maxLengths = IntArray(29) { 0 } // max feasible length per length code
+    val maxLengths = IntArray(29) { 0 } // best feasible length for lc
+    val maxDists = IntArray(29) { Int.MAX_VALUE } // distance paired with maxLengths[lc]
+    val baseDists = IntArray(29) { Int.MAX_VALUE } // best distance for base length of lc
+    val haveMax = BooleanArray(29)
+    val haveBase = BooleanArray(29)
+
+    fun Int.betterThan(curDist: Int): Boolean {
+        val newDc = Tables.distCodeIndex(this)
+        val curDc = if (curDist == Int.MAX_VALUE) Int.MAX_VALUE else Tables.distCodeIndex(curDist)
+        return newDc < curDc || (newDc == curDc && this < curDist)
+    }
 
     var i = 0
     val size = raw.size
     while (i < size) {
         val (len, dist) = raw[i]
-        val distCode = Tables.distCodeIndex(dist)
         val lcMax = Tables.lenCodeIndex(len)
         var lc = 0
         while (lc <= lcMax) {
@@ -50,15 +57,23 @@ fun buildSublenCandidates(raw: MatchList): MatchList {
             val extra = Tables.LEN_EXTRA[lc]
             val cap = base + ((1 shl extra) - 1) // max len that still has code equal to `lc`
             val feasibleMax = if (len < cap) len else cap
-            if (feasibleMax > maxLengths[lc]) {
+
+            if (!haveMax[lc]) {
+                haveMax[lc] = true
                 maxLengths[lc] = feasibleMax
+                maxDists[lc] = dist
+            } else {
+                val curLen = maxLengths[lc]
+                val curDist = maxDists[lc]
+                if (feasibleMax > curLen || (feasibleMax == curLen && dist.betterThan(curDist))) {
+                    maxLengths[lc] = feasibleMax
+                    maxDists[lc] = dist
+                }
             }
 
-            val curDistCode = bestDistCodes[lc]
-            val curDist = bestDists[lc]
-            if (distCode < curDistCode || (distCode == curDistCode && dist < curDist)) {
-                bestDistCodes[lc] = distCode
-                bestDists[lc] = dist
+            if (!haveBase[lc] || dist.betterThan(baseDists[lc])) {
+                haveBase[lc] = true
+                baseDists[lc] = dist
             }
             lc++
         }
@@ -66,16 +81,17 @@ fun buildSublenCandidates(raw: MatchList): MatchList {
     }
 
     // output at most two candidates per lenCode: max and base (if different)
-    var emitted = 0
     var lc = 0
     while (lc < 29) {
-        val maxLen = maxLengths[lc]
-        if (maxLen != 0) {
-            val bestDist = bestDists[lc]
-            out.add(Match(maxLen, bestDist))
+        if (haveMax[lc]) {
+            val maxLen = maxLengths[lc]
+            val maxDist = maxDists[lc]
+            out.add(Match(maxLen, maxDist))
+
             val base = Tables.LEN_BASE[lc]
-            if (maxLen != base) out.add(Match(base, bestDist))
-            emitted += if (maxLen != base) 2 else 1
+            if (maxLen != base && haveBase[lc]) {
+                out.add(Match(base, baseDists[lc]))
+            }
         }
         lc++
     }
