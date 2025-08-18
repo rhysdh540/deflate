@@ -1,8 +1,6 @@
 package demo
 
 import dev.rdh.deflate.dp.MultiPassOptimalParser
-import dev.rdh.deflate.dp.OptimalParser
-import dev.rdh.deflate.dp.ParsingCostModel
 import dev.rdh.deflate.format.writeDynamicBlock
 import dev.rdh.deflate.lz.HashChainMatchFinder
 import dev.rdh.deflate.split.Block
@@ -19,7 +17,7 @@ import kotlin.time.measureTimedValue
 import kotlin.use
 
 fun main() {
-    val resourcePath = "scrabble.txt"
+    val resourcePath = "12w05a.json"
     val data = resourceBytes(resourcePath)
     println("Input: ${data.size} bytes (${resourcePath})")
 
@@ -28,13 +26,16 @@ fun main() {
 
     val (deflated, duration) = measureTimedValue {
         val mf = HashChainMatchFinder().also { it.reset(data) }
-        val dp = OptimalParser.run(data, mf, ParsingCostModel.FIXED)
+        val dp = MultiPassOptimalParser.run(data, mf, 2)
+        println("actually ran ${dp.passes} global passes")
 
         val blocks = GreedyBlockSplitter().split(dp.tokens)
 
         val blockDPs = Block.toByteRanges(blocks, Block.bytesPrefix(dp.tokens)).map {
             MultiPassOptimalParser.run(data, mf,
-                start = it.first, end = it.last + 1, maxPasses = 100
+                start = it.first, end = it.last + 1,
+                maxPasses = 100,
+                startingCosts = dp.costs
             )
         }
 

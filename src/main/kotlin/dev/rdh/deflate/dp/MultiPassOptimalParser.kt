@@ -20,11 +20,12 @@ object MultiPassOptimalParser {
         input: ByteArray,
         mf: MatchFinder,
         maxPasses: Int = 3,
-        epsilon: Double = 5e-4,
+        epsilon: Double = 0.0,
         start: Int = 0,
-        end: Int = input.size
+        end: Int = input.size,
+        startingCosts: ParsingCostModel = ParsingCostModel.FIXED
     ): MultiPassResult {
-        var costs = ParsingCostModel.FIXED
+        var costs = startingCosts
 
         var bestTotal = Long.MAX_VALUE
         var bestRes: MultiPassResult? = null
